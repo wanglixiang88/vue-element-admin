@@ -23,10 +23,9 @@ export function logout() {
   })
 }
 
-export function getAuthMenu(token) {
+export function getAuthMenu() {
   return request({
     url: '/API/users/getMenu',
-    method: 'get',
-    params: { token }
+    method: 'get'
   })
 }

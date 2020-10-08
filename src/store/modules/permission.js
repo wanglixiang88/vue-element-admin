@@ -1,6 +1,7 @@
 import { asyncRoutes, constantRoutes } from '@/router'
 import { getAuthMenu } from '@/api/user'
 import Layout from '@/layout'
+import { getToken } from '@/utils/auth'
 
 /**
  * 通过meta.role判断是否与当前用户权限匹配
@@ -13,27 +14,6 @@ function hasPermission(roles, route) { // 判断是否有权限
   } else {
     return true
   }
-}
-/**
- * 后台查询的菜单数据拼装成路由格式的数据
- * @param routes
- */
-export function generaMenu(routes, data) {
-  data.forEach(item => {
-    // alert(JSON.stringify(item))
-    const menu = {
-      path: item.url === '#' ? item.menu_id + '_key' : item.url,
-      component: item.url === '#' ? Layout : () => import(`@/views${item.url}/index`),
-      // hidden: true,
-      children: [],
-      name: 'menu_' + item.menu_id,
-      meta: { title: item.menu_name, id: item.menu_id, roles: ['admin'] }
-    }
-    if (item.children) {
-      generaMenu(menu.children, item.children)
-    }
-    routes.push(menu)
-  })
 }
 
 /**
@@ -69,28 +49,35 @@ const mutations = {
   }
 }
 
-// const actions = {
-//   generateRoutes({ commit }, roles) {
-//     return new Promise(resolve => {
-//       let accessedRoutes
-//       if (roles.includes('admin')) { // 如果未admin角色 加载所有动态路由
-//         accessedRoutes = asyncRoutes || []
-//       } else { // 如果不是admin角色 则加载过滤后的动态路由
-//         accessedRoutes = filterAsyncRoutes(asyncRoutes, roles)
-//       }
-//       commit('SET_ROUTES', accessedRoutes) // 保存路由
-//       resolve(accessedRoutes)
-//     })
-//   }
-// }
+export const filterAsyncRouter = (routers) => { // 遍历后台传来的路由字符串，转换为组件对象
+  const accessedRouters = routers.filter(router => {
+    if (router.component) {
+      // if (router.component === 'Layout') { // Layout组件特殊处理
+      //   router.component = Layout
+      // } else {
+      const component = router.component
+      router.component = loadView(component)
+      // }
+    }
+    if (router.children && router.children.length) {
+      router.children = filterAsyncRouter(router.children)
+    }
+    return true
+  })
+  return accessedRouters
+}
+
+export const loadView = (view) => { // 路由懒加载
+  return () => import(`@/views/${view}`)
+}
 
 const actions = {
   generateRoutes({ commit }, roles) {
     return new Promise(resolve => {
       const loadMenuData = []
       // 先查询后台并返回左侧菜单数据并把数据添加到路由
-      getAuthMenu('1111').then(response => {
-        debugger
+      getAuthMenu().then(response => {
+       
         let data = response
         if (response.code !== 1000) {
           this.$message({
@@ -99,25 +86,23 @@ const actions = {
           })
         } else {
           data = response.data.menuList
-          Object.assign(loadMenuData, data)
-          generaMenu(asyncRoutes, loadMenuData)
-          let accessedRoutes
-          if (roles.includes('admin')) {
-            // alert(JSON.stringify(asyncRoutes))
-            accessedRoutes = asyncRoutes || []
-          } else {
-            accessedRoutes = filterAsyncRoutes(asyncRoutes, roles)
-          }
-          commit('SET_ROUTES', accessedRoutes)
-          resolve(accessedRoutes)
+          var str='{"code":1000,"message":"成功","data":[{"id":1,"name":"11","path":"/documentation","redirect":"noredirect","component":"Layout","alwaysShow":true,"meta":{"title":"系统管理员","icon":"edit"},"pid":null,"sort":0,"children":[{"id":2,"name":"用户管理","path":"index","component":"documentation/index","meta":{"title":"用户管理","icon":"edit"}}]}]}';
+
+          var date1= JSON.parse(str)
+          console.log(date1)
+
+          const asyncRouter = filterAsyncRouter(date1.data)
+          commit('SET_ROUTES', asyncRouter)
+          resolve(asyncRouter)
+
         }
-        // generaMenu(asyncRoutes, data)
       }).catch(error => {
         console.log(error)
       })
     })
   }
 }
+
 
 export default {
   namespaced: true,
