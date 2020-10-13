@@ -1,7 +1,6 @@
-import { asyncRoutes, constantRoutes } from '@/router'
+import { constantRoutes } from '@/router'
 import { getAuthMenu } from '@/api/user'
 import Layout from '@/layout'
-import { getToken } from '@/utils/auth'
 
 /**
  * 通过meta.role判断是否与当前用户权限匹配
@@ -51,7 +50,6 @@ const mutations = {
 
 export const filterAsyncRouter = (routers) => { // 遍历后台传来的路由字符串，转换为组件对象
   const accessedRouters = routers.filter(router => {
-    debugger
     if (router.component) {
       if (router.component === 'Layout') { // Layout组件特殊处理
         router.component = Layout
@@ -87,7 +85,7 @@ const actions = {
           })
         } else {
           data = response.data.menuList
-          var str='{"code":1000,"message":"成功","data":[{"id":1,"name":"系统管理员","path":"/documentation/index","redirect":"/documentation","component":"Layout","alwaysShow":true,"meta":{"title":"系统管理员","icon":"edit"},"pid":null,"sort":0,"children":[{"id":2,"name":"用户管理","path":"index","component":"documentation/index","meta":{"title":"用户管理","icon":"edit"}}]}]}';
+          var str='{"code":1000,"message":"成功","data":[{"id":1,"name":"系统管理员","path":"/user/index","redirect":"/user","component":"Layout","alwaysShow":true,"meta":{"title":"系统管理员","icon":"edit"},"pid":null,"sort":0,"children":[{"id":2,"name":"用户管理","path":"index","component":"user/index","meta":{"title":"用户管理","icon":"edit"}}]}]}';
 
           var date1= JSON.parse(str)
           console.log(date1)
