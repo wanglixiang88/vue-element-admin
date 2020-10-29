@@ -38,7 +38,8 @@ module.exports = {
     },
     proxy: {
       [process.env.VUE_APP_BASE_API]: {
-        target: 'http://localhost:54929',
+        target: 'http://localhost:83',
+        
         changeOrigin: true, // 配置跨域
         ws: true,
         secure: false,
