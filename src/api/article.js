@@ -1,10 +1,10 @@
 import request from '@/utils/request'
 
-export function fetchList(query) {
+export function fetchList(data) {
   return request({
-    url: '/API/users/getUserList',
-    method: 'get',
-    params: query
+    url: '/API/UserInfo/GetUserInfoList',
+    method: 'post',
+    data
   })
 }
 

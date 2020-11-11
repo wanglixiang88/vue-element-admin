@@ -35,14 +35,64 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column label="userName" prop="id" align="center" width="150" :class-name="getSortClass('id')">
+      <el-table-column label="用户名" prop="id" align="center" width="150" :class-name="getSortClass('id')">
         <template slot-scope="{row}">
           <span>{{ row.userName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="passWord" width="150px" align="center">
+      <el-table-column label="密码" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.passWord }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="用户Token" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.userToken }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="失效日期" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.tokenExpirationDate }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="是否有效" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.isValid }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="角色" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.roleId }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建人ID" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.createUserId }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建人姓名" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.createUserName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.createTime }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="更新人ID" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.updateUserId }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="更新人名称" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.updateUserName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="更新时间" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.updateTime }}</span>
         </template>
       </el-table-column>
     </el-table>
