@@ -1,28 +1,22 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.title" placeholder="Title" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
+      <el-input v-model="listQuery.title" placeholder="用户名" style="width:200px; margin-right:10px;" class="filter-item" />
+      <el-select v-model="listQuery.type" placeholder="用户状态" clearable class="filter-item" style="margin-right:10px;">
+        <el-option v-for="item in validOptions" :key="item.key" :label="item.label+'('+item.key+')'" :value="item.key" />
       </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
+      <el-select v-model="listQuery.sort" class="filter-item" style="margin-right:10px;" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
+        搜索
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        Add
+        添加
       </el-button>
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
+        导出
       </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox>
     </div>
 
     <el-table
@@ -35,64 +29,80 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column label="用户名" prop="id" align="center" width="150" :class-name="getSortClass('id')">
+      <el-table-column label="用户名" prop="id" align="center" :class-name="getSortClass('id')">
         <template slot-scope="{row}">
           <span>{{ row.userName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="密码" width="150px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.passWord }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="用户Token" width="150px" align="center">
+      <el-table-column label="用户Token" align="center">
         <template slot-scope="{row}">
           <span>{{ row.userToken }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="失效日期" width="150px" align="center">
+      <el-table-column label="失效日期" align="center">
         <template slot-scope="{row}">
           <span>{{ row.tokenExpirationDate }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="是否有效" width="150px" align="center">
+      <el-table-column label="是否有效" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.isValid }}</span>
+          <el-tag v-if="row.isValid===0" size="mini" type="success">
+            有效
+          </el-tag>
+          <el-tag v-else size="mini" type="danger">
+            无效
+          </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="角色" width="150px" align="center">
+      <el-table-column label="角色" align="center">
         <template slot-scope="{row}">
           <span>{{ row.roleId }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="创建人ID" width="150px" align="center">
+      <el-table-column label="创建人ID" align="center">
         <template slot-scope="{row}">
           <span>{{ row.createUserId }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="创建人姓名" width="150px" align="center">
+      <el-table-column label="创建人姓名" align="center">
         <template slot-scope="{row}">
           <span>{{ row.createUserName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" width="150px" align="center">
+      <el-table-column label="创建时间" align="center">
         <template slot-scope="{row}">
           <span>{{ row.createTime }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="更新人ID" width="150px" align="center">
+      <el-table-column label="更新人ID" align="center">
         <template slot-scope="{row}">
           <span>{{ row.updateUserId }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="更新人名称" width="150px" align="center">
+      <el-table-column label="更新人名称" align="center">
         <template slot-scope="{row}">
           <span>{{ row.updateUserName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="更新时间" width="150px" align="center">
+      <el-table-column label="更新时间" align="center">
         <template slot-scope="{row}">
           <span>{{ row.updateTime }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" align="center" width="250px" class-name="small-padding fixed-width">
+        <template slot-scope="{row}">
+          <el-button v-if="row.isValid===0" type="info" size="mini">
+            设为无效
+          </el-button>
+          <el-button v-else type="success" size="mini">
+            设为有效
+          </el-button>
+          <el-button type="warning" size="mini">
+            更换角色
+          </el-button>
+          <el-button type="danger" size="mini" @click="handleModifyStatus(row,'published')">
+            删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -100,38 +110,25 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="Type" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name" :value="item.key" />
-          </el-select>
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width:90%; margin:0px auto ">
+        <el-form-item label="用户名" prop="用户名">
+          <el-input v-model="temp.userName" placeholder="请输入用户姓名" />
         </el-form-item>
-        <el-form-item label="Date" prop="timestamp">
-          <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
+        <el-form-item label="密码" prop="密码">
+          <el-input v-model="temp.passWord" placeholder="请输入用户登录的初始密码" />
         </el-form-item>
-        <el-form-item label="Title" prop="title">
-          <el-input v-model="temp.title" />
+        <el-form-item label="角色" prop="角色">
+          <el-input v-model="temp.roleId" placeholder="请选择用户角色" />
         </el-form-item>
-        <el-form-item label="Status">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Imp">
-          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />
-        </el-form-item>
-        <el-form-item label="Remark">
-          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
+        <el-form-item align="right">
+          <el-button @click="dialogFormVisible = false">
+            取消
+          </el-button>
+          <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+            提交保存
+          </el-button>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
-          Cancel
-        </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
-        </el-button>
-      </div>
     </el-dialog>
 
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
@@ -147,41 +144,15 @@
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+import { fetchList, fetchPv, saveUserInfo, updateArticle } from '@/api/article'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
-
-const calendarTypeOptions = [
-  { key: 'CN', display_name: 'China' },
-  { key: 'US', display_name: 'USA' },
-  { key: 'JP', display_name: 'Japan' },
-  { key: 'EU', display_name: 'Eurozone' }
-]
-
-// arr to obj, such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
 
 export default {
   name: 'ComplexTable',
   components: { Pagination },
   directives: { waves },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      return statusMap[status]
-    },
-    typeFilter(type) {
-      return calendarTypeKeyValue[type]
-    }
-  },
   data() {
     return {
       tableKey: 0,
@@ -196,10 +167,8 @@ export default {
         type: undefined,
         sort: '+id'
       },
-      importanceOptions: [1, 2, 3],
-      calendarTypeOptions,
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      statusOptions: ['published', 'draft', 'deleted'],
+      validOptions: [{ label: '有效', key: 0 }, { label: '无效', key: 1 }],
       showReviewer: false,
       temp: {
         id: undefined,
@@ -209,8 +178,8 @@ export default {
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
-        update: 'Edit',
-        create: 'Create'
+        update: '更新用户信息',
+        create: '添加用户'
       },
       dialogPvVisible: false,
       pvData: [],
@@ -233,7 +202,6 @@ export default {
         this.list = response.data.item
         this.total = response.data.total
 
-        // Just to simulate the time of the request
         setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000)
@@ -282,14 +250,12 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
+          saveUserInfo(this.temp).then((res) => {
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
               title: 'Success',
-              message: 'Created Successfully',
+              message: res.message,
               type: 'success',
               duration: 2000
             })
@@ -312,7 +278,7 @@ export default {
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
           updateArticle(tempData).then(() => {
-            const index = this.list.findIndex(v => v.id === this.temp.id)
+            const index = this.list.findIndex(v => v.userId === this.temp.userId)
             this.list.splice(index, 1, this.temp)
             this.dialogFormVisible = false
             this.$notify({

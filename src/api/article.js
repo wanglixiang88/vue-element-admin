@@ -24,9 +24,9 @@ export function fetchPv(pv) {
   })
 }
 
-export function createArticle(data) {
+export function saveUserInfo(data) {
   return request({
-    url: '/vue-element-admin/article/create',
+    url: '/API/UserInfo/SaveUserInfo',
     method: 'post',
     data
   })
