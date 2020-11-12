@@ -1,8 +1,8 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.title" placeholder="用户名" style="width:200px; margin-right:10px;" class="filter-item" />
-      <el-select v-model="listQuery.type" placeholder="用户状态" clearable class="filter-item" style="margin-right:10px;">
+      <el-input v-model="listQuery.parameterJson[0].paramValue" placeholder="用户名" style="width:200px; margin-right:10px;" class="filter-item" />
+      <el-select v-model="listQuery.parameterJson[1].paramValue" placeholder="用户状态" clearable class="filter-item" style="margin-right:10px;">
         <el-option v-for="item in validOptions" :key="item.key" :label="item.label+'('+item.key+')'" :value="item.key" />
       </el-select>
       <el-select v-model="listQuery.sort" class="filter-item" style="margin-right:10px;" @change="handleFilter">
@@ -89,7 +89,7 @@
           <span>{{ row.updateTime }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" width="250px" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="280px" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button v-if="row.isValid===0" type="info" size="mini">
             设为无效
@@ -111,13 +111,13 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width:90%; margin:0px auto ">
-        <el-form-item label="用户名" prop="用户名">
+        <el-form-item label="用户名" prop="userName">
           <el-input v-model="temp.userName" placeholder="请输入用户姓名" />
         </el-form-item>
-        <el-form-item label="密码" prop="密码">
+        <el-form-item label="密码" prop="passWord">
           <el-input v-model="temp.passWord" placeholder="请输入用户登录的初始密码" />
         </el-form-item>
-        <el-form-item label="角色" prop="角色">
+        <el-form-item label="角色" prop="roleId">
           <el-input v-model="temp.roleId" placeholder="请选择用户角色" />
         </el-form-item>
         <el-form-item align="right">
@@ -162,16 +162,18 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        importance: undefined,
-        title: undefined,
-        type: undefined,
-        sort: '+id'
+        sort: 'asc',
+        sidx: 'userId',
+        parameterJson: [
+          { paramName: 'userName', paramValue: '', Operation: 'Like' },
+          { paramName: 'isValid', paramValue: '', Operation: 'Equal' }
+        ]
       },
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
+      sortOptions: [{ label: 'ID Ascending', key: 'asc' }, { label: 'ID Descending', key: 'desc' }],
       validOptions: [{ label: '有效', key: 0 }, { label: '无效', key: 1 }],
       showReviewer: false,
       temp: {
-        id: undefined,
+        userId: null,
         userName: '',
         passWord: ''
       },
@@ -184,9 +186,9 @@ export default {
       dialogPvVisible: false,
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        userName: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        passWord: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+        roleId: [{ required: true, message: '请选择角色', trigger: 'blur' }]
       },
       downloadLoading: false
     }
