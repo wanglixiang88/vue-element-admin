@@ -169,7 +169,7 @@ export default {
           { paramName: 'isValid', paramValue: '', Operation: 'Equal' }
         ]
       },
-      sortOptions: [{ label: 'ID Ascending', key: 'asc' }, { label: 'ID Descending', key: 'desc' }],
+      sortOptions: [{ label: 'ID Ascending', key: 'ASC' }, { label: 'ID Descending', key: 'DESC' }],
       validOptions: [{ label: '有效', key: 0 }, { label: '无效', key: 1 }],
       showReviewer: false,
       temp: {
