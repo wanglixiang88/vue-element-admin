@@ -90,17 +90,17 @@
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="280px" class-name="small-padding fixed-width">
-        <template slot-scope="{row}">
-          <el-button v-if="row.isValid===0" type="info" size="mini">
+        <template slot-scope="{row,$index}">
+          <el-button v-if="row.isValid===0" type="info" size="mini" @click="handleModifyStatus(row,1)">
             设为无效
           </el-button>
-          <el-button v-else type="success" size="mini">
+          <el-button v-else type="success" size="mini" @click="handleModifyStatus(row,0)">
             设为有效
           </el-button>
           <el-button type="warning" size="mini">
             更换角色
           </el-button>
-          <el-button type="danger" size="mini" @click="handleModifyStatus(row,'published')">
+          <el-button type="danger" size="mini" @click="handleDelete(row,$index)">
             删除
           </el-button>
         </template>
@@ -144,7 +144,7 @@
 </template>
 
 <script>
-import { fetchList, fetchPv, saveUserInfo, updateArticle } from '@/api/article'
+import { fetchList, saveUserInfo, deleteUser, ChangUserVaild } from '@/api/article'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -161,8 +161,8 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20,
-        sort: 'asc',
+        limit: 10,
+        sort: 'ASC',
         sidx: 'userId',
         parameterJson: [
           { paramName: 'userName', paramValue: '', Operation: 'Like' },
@@ -175,7 +175,8 @@ export default {
       temp: {
         userId: null,
         userName: '',
-        passWord: ''
+        passWord: '',
+        isValid: 0
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -214,11 +215,13 @@ export default {
       this.getList()
     },
     handleModifyStatus(row, status) {
-      this.$message({
-        message: '操作Success',
-        type: 'success'
+      ChangUserVaild({ userId: row.userId, isValid: status }).then((res) => {
+        this.$message({
+          message: '更新状态成功',
+          type: 'success'
+        })
+        row.isValid = status
       })
-      row.status = status
     },
     sortChange(data) {
       const { prop, order } = data
@@ -253,7 +256,8 @@ export default {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           saveUserInfo(this.temp).then((res) => {
-            this.list.unshift(this.temp)
+            this.temp.isValid = 0
+            this.list.push(this.temp)
             this.dialogFormVisible = false
             this.$notify({
               title: 'Success',
@@ -265,47 +269,15 @@ export default {
         }
       })
     },
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
-    },
-    updateData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            const index = this.list.findIndex(v => v.userId === this.temp.userId)
-            this.list.splice(index, 1, this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: 'Success',
-              message: 'Update Successfully',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
-      })
-    },
     handleDelete(row, index) {
-      this.$notify({
-        title: 'Success',
-        message: 'Delete Successfully',
-        type: 'success',
-        duration: 2000
-      })
-      this.list.splice(index, 1)
-    },
-    handleFetchPv(pv) {
-      fetchPv(pv).then(response => {
-        this.pvData = response.data.pvData
-        this.dialogPvVisible = true
+      deleteUser({ userId: row.userId }).then((res) => {
+        this.$notify({
+          title: 'Success',
+          message: res.message,
+          type: 'success',
+          duration: 2000
+        })
+        this.list.splice(index, 1)
       })
     },
     handleDownload() {
