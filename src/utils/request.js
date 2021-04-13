@@ -20,6 +20,7 @@ service.interceptors.request.use(
       // ['token'] is a custom headers key
       // please modify it according to the actual situation
       config.headers['token'] = getToken()
+      console.log("获取到的token："+getToken()+store.getters.token)
     }
     return config
   },

@@ -133,12 +133,12 @@ export default {
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)
             .then(() => {
-              console.log('111')
+              console.log('登录成功')
               this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
               this.loading = false
             })
             .catch(() => {
-              console.log('222')
+              console.log('登录抛出异常')
               this.loading = false
             })
         } else {

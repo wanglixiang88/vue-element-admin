@@ -1,9 +1,11 @@
 import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
+import JWT from "jwt-decode";
 
 const state = {
   token: getToken(),
+  userId:"",
   name: '',
   avatar: '',
   introduction: '',
@@ -25,6 +27,9 @@ const mutations = {
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
+  },
+  SET_USERID:(state,userId)=>{
+    state.userId=userId
   }
 }
 
@@ -34,9 +39,15 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       login({ userName: username.trim(), passWord: password }).then(response => {
-        const { data } = response // 解构出data
-        commit('SET_TOKEN', data.token)// 更新store里面的token
-        setToken(data.token)// token保存到cookie
+        console.log("服务器返回的内容："+response.data.token)
+        const data = JWT(response.data.token);
+
+        commit('SET_TOKEN', response.data.token) //更新store里面的token
+        commit('SET_NAME', data.userName)
+        commit('SET_USERID', data.userId)
+        
+        setToken(response.data.token) //token保存到cookie
+
         resolve()
       }).catch(error => {
         reject(error)
@@ -47,7 +58,7 @@ const actions = {
   // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-      getInfo(state.token).then(response => {
+      getInfo(state.userId).then(response => {
         const { data } = response
 
         if (!data) {
@@ -62,7 +73,6 @@ const actions = {
         }
 
         commit('SET_ROLES', roles)
-        commit('SET_NAME', name)
         commit('SET_AVATAR', avatar)
         commit('SET_INTRODUCTION', introduction)
         resolve(data)
