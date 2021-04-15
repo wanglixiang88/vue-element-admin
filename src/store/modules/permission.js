@@ -85,7 +85,7 @@ const actions = {
           })
         } else {
           data = response.data.menuList
-          var str='{"code":1000,"message":"成功","data":[{"id":1,"name":"系统管理员","path":"/user/index","redirect":"/user","component":"Layout","alwaysShow":true,"meta":{"title":"系统管理员","icon":"edit"},"pid":null,"sort":0,"children":[{"id":2,"name":"用户管理","path":"index","component":"user/index","meta":{"title":"用户管理","icon":"edit"}}]}]}';
+          var str='{"code":1000,"message":"成功","data":[{"id":1,"name":"系统管理员","path":"/user/index","redirect":"/user","component":"Layout","alwaysShow":true,"meta":{"title":"系统管理员","icon":"edit"},"pid":null,"sort":0,"children":[{"id":2,"name":"用户管理","path":"index","component":"user/index","meta":{"title":"用户管理","icon":"edit"}},{"id":2,"name":"角色管理","path":"userRole","component":"user/userRole","meta":{"title":"角色管理","icon":"edit"}}]}]}';
 
           var date1= JSON.parse(str)
           console.log(date1)

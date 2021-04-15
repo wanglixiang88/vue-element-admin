@@ -1,10 +1,7 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.parameterJson[0].paramValue" placeholder="用户名" style="width:200px; margin-right:10px;" class="filter-item" />
-      <el-select v-model="listQuery.parameterJson[1].paramValue" placeholder="用户状态" clearable class="filter-item" style="margin-right:10px;">
-        <el-option v-for="item in validOptions" :key="item.key" :label="item.label+'('+item.key+')'" :value="item.key" />
-      </el-select>
+      <el-input v-model="listQuery.parameterJson[0].paramValue" placeholder="角色名" style="width:200px; margin-right:10px;" class="filter-item" />
       <el-select v-model="listQuery.sort" class="filter-item" style="margin-right:10px;" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
@@ -29,29 +26,9 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column label="用户名" prop="id" align="center" :class-name="getSortClass('id')">
+      <el-table-column label="角色名称" prop="id" align="center" :class-name="getSortClass('id')">
         <template slot-scope="{row}">
-          <span>{{ row.userName }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="失效日期" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.tokenExpirationDate }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="是否有效" align="center">
-        <template slot-scope="{row}">
-          <el-tag v-if="row.isValid===0" size="mini" type="success">
-            有效
-          </el-tag>
-          <el-tag v-else size="mini" type="danger">
-            无效
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="角色" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.roleId }}</span>
+          <span>{{ row.roleName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="创建人ID" align="center">
@@ -86,14 +63,11 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="280px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button v-if="row.isValid===0" type="info" size="mini" @click="handleModifyStatus(row,1)">
-            设为无效
+          <el-button type="primary" size="mini">
+            编辑
           </el-button>
-          <el-button v-else type="success" size="mini" @click="handleModifyStatus(row,0)">
-            设为有效
-          </el-button>
-          <el-button type="warning" size="mini">
-            更换角色
+          <el-button type="success" size="mini">
+            设置权限
           </el-button>
           <el-button type="danger" size="mini" @click="handleDelete(row,$index)">
             删除
@@ -139,7 +113,8 @@
 </template>
 
 <script>
-import { fetchList, saveUserInfo, deleteUser, ChangUserVaild } from '@/api/article'
+import { saveUserInfo, deleteUser, ChangUserVaild } from '@/api/article'
+import { fetchList } from '@/api/UserRoleAPI'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -158,14 +133,12 @@ export default {
         page: 1,
         limit: 10,
         sort: 'ASC',
-        sidx: 'userId',
+        sidx: 'roleId',
         parameterJson: [
-          { paramName: 'userName', paramValue: '', Operation: 'Like' },
-          { paramName: 'isValid', paramValue: '', Operation: 'Equal' }
+          { paramName: 'roleName', paramValue: '', Operation: 'Like' }
         ]
       },
       sortOptions: [{ label: 'ID Ascending', key: 'ASC' }, { label: 'ID Descending', key: 'DESC' }],
-      validOptions: [{ label: '有效', key: 0 }, { label: '无效', key: 1 }],
       showReviewer: false,
       temp: {
         userId: null,
