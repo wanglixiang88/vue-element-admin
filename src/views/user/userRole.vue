@@ -11,9 +11,6 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         添加
       </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        导出
-      </el-button>
     </div>
 
     <el-table
@@ -63,7 +60,7 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="280px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini">
+          <el-button type="primary" size="mini" @click="handleModify(row,0)">
             编辑
           </el-button>
           <el-button type="success" size="mini">
@@ -80,14 +77,8 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width:90%; margin:0px auto ">
-        <el-form-item label="用户名" prop="userName">
-          <el-input v-model="temp.userName" placeholder="请输入用户姓名" />
-        </el-form-item>
-        <el-form-item label="密码" prop="passWord">
-          <el-input v-model="temp.passWord" placeholder="请输入用户登录的初始密码" />
-        </el-form-item>
-        <el-form-item label="角色" prop="roleId">
-          <el-input v-model="temp.roleId" placeholder="请选择用户角色" />
+        <el-form-item label="角色名" prop="roleName">
+          <el-input v-model="temp.roleName" placeholder="请输入角色名称" />
         </el-form-item>
         <el-form-item align="right">
           <el-button @click="dialogFormVisible = false">
@@ -113,10 +104,8 @@
 </template>
 
 <script>
-import { saveUserInfo, deleteUser, ChangUserVaild } from '@/api/article'
-import { fetchList } from '@/api/UserRoleAPI'
+import { fetchList, saveRoleInfo, deleteRoleInfo } from '@/api/UserRoleAPI'
 import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
@@ -129,6 +118,7 @@ export default {
       list: null,
       total: 0,
       listLoading: true,
+      // 查询参数
       listQuery: {
         page: 1,
         limit: 10,
@@ -139,27 +129,22 @@ export default {
         ]
       },
       sortOptions: [{ label: 'ID Ascending', key: 'ASC' }, { label: 'ID Descending', key: 'DESC' }],
-      showReviewer: false,
       temp: {
-        userId: null,
-        userName: '',
-        passWord: '',
-        isValid: 0
+        roleId: null,
+        roleName: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
+      updateDataRow: '',
       textMap: {
-        update: '更新用户信息',
-        create: '添加用户'
+        update: '更新角色信息',
+        create: '添加角色'
       },
       dialogPvVisible: false,
       pvData: [],
       rules: {
-        userName: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-        passWord: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-        roleId: [{ required: true, message: '请选择角色', trigger: 'blur' }]
-      },
-      downloadLoading: false
+        roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }]
+      }
     }
   },
   created() {
@@ -182,15 +167,6 @@ export default {
       this.listQuery.page = 1
       this.getList()
     },
-    handleModifyStatus(row, status) {
-      ChangUserVaild({ userId: row.userId, isValid: status }).then((res) => {
-        this.$message({
-          message: '更新状态成功',
-          type: 'success'
-        })
-        row.isValid = status
-      })
-    },
     sortChange(data) {
       const { prop, order } = data
       if (prop === 'id') {
@@ -207,11 +183,41 @@ export default {
     },
     resetTemp() {
       this.temp = {
-        id: undefined,
-        userName: '',
-        passWord: ''
+        roleId: '',
+        roleName: ''
       }
     },
+    handleModify(row) {
+      this.temp = {
+        roleId: row.roleId,
+        roleName: row.roleName
+      }
+      this.updateDataRow = row
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    // 更新角色信息
+    updateData() {
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          saveRoleInfo(this.temp).then((res) => {
+            // this.list.splice(this.updateDataRow.index, 1, this.temp)
+            this.updateDataRow.roleName = this.temp.roleName
+            this.dialogFormVisible = false
+            this.$notify({
+              title: 'Success',
+              message: res.message,
+              type: 'success',
+              duration: 2000
+            })
+          })
+        }
+      })
+    },
+    // 保存角色信息弹出框
     handleCreate() {
       this.resetTemp()
       this.dialogStatus = 'create'
@@ -220,11 +226,11 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
+    // 保存角色信息
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          saveUserInfo(this.temp).then((res) => {
-            this.temp.isValid = 0
+          saveRoleInfo(this.temp).then((res) => {
             this.list.push(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -238,7 +244,7 @@ export default {
       })
     },
     handleDelete(row, index) {
-      deleteUser({ userId: row.userId }).then((res) => {
+      deleteRoleInfo({ roleId: row.roleId }).then((res) => {
         this.$notify({
           title: 'Success',
           message: res.message,
@@ -247,29 +253,6 @@ export default {
         })
         this.list.splice(index, 1)
       })
-    },
-    handleDownload() {
-      this.downloadLoading = true
-      import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-        const data = this.formatJson(filterVal)
-        excel.export_json_to_excel({
-          header: tHeader,
-          data,
-          filename: 'table-list'
-        })
-        this.downloadLoading = false
-      })
-    },
-    formatJson(filterVal) {
-      return this.list.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
     },
     getSortClass: function(key) {
       const sort = this.listQuery.sort
