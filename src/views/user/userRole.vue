@@ -60,14 +60,14 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="280px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleModify(row,0)">
-            编辑
+          <el-button type="primary" size="mini" @click="handleModify(row)">
+            <i class="el-icon-edit"></i>编辑
           </el-button>
           <el-button type="success" size="mini">
-            设置权限
+            <i class="el-icon-setting"></i>设置权限
           </el-button>
           <el-button type="danger" size="mini" @click="handleDelete(row,$index)">
-            删除
+            <i class="el-icon-delete" />删除
           </el-button>
         </template>
       </el-table-column>

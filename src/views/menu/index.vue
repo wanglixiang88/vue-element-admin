@@ -57,12 +57,23 @@
       </el-table-column>
       <el-table-column label="操作" align="center" width="280px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button type="primary" size="mini" @click="handleModifyStatus(row,1)">
-            编辑
+          <el-button type="primary" size="mini" @click="handleModify(row)">
+            <i class="el-icon-edit"></i>编辑
           </el-button>
-          <el-button type="danger" size="mini" @click="handleDelete(row,$index)">
-            删除
-          </el-button>
+          <el-popconfirm
+            style="margin-left:10px;"
+            confirm-button-text="确认"
+            cancel-button-text="取消"
+            size="mini"
+            icon="el-icon-info"
+            icon-color="red"
+            title="确认要删除此条记录？"
+            @onConfirm="handleDelete(row,$index)"
+          >
+            <el-button slot="reference" type="danger" size="mini">
+              <i class="el-icon-delete" />删除
+            </el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -72,7 +83,7 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width:90%; margin:0px auto ">
         <!-- 调用树形下拉框组件 -->
-        <el-form-item label="上级菜单" prop="parentId">
+        <el-form-item label="上级菜单">
           <SelectTree
             :props="props"
             :options="optionData"
@@ -81,37 +92,40 @@
             :accordion="isAccordion"
             @getValue="getValue($event)" />
         </el-form-item>
-        <el-form-item label="菜单名称" prop="menuName">
+        <el-form-item label="菜单名" prop="menuName">
           <el-input v-model="temp.menuName" placeholder="请输入菜单名称" />
         </el-form-item>
-        <el-form-item label="菜单路径" prop="route">
+        <el-form-item label="菜单路径">
           <el-input v-model="temp.route" placeholder="请输入点击菜单跳转的路径" />
         </el-form-item>
-        <el-form-item label="图标样式" prop="iconClass">
+        <el-form-item label="图标样式">
           <el-input v-model="temp.iconClass" placeholder="请输入图标样式" />
         </el-form-item>
-        <el-form-item label="排序" prop="sequence">
+        <el-form-item label="排序">
           <el-input v-model="temp.sequence" placeholder="请输入排序" />
+        </el-form-item>
+        <el-form-item label="页面功能">
+          <el-checkbox-group v-model="checkedCities1" @change="getOperation()">
+            <el-checkbox v-for="i in optionsList" :key="i" :label="i.value">{{ i.name }}</el-checkbox>
+          </el-checkbox-group>
         </el-form-item>
         <el-form-item align="right">
           <el-button @click="dialogFormVisible = false">
             取消
           </el-button>
-          <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
+          <el-button type="primary" @click="createData()">
             提交保存
           </el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
-
   </div>
 </template>
 
 <script>
-import { saveUserInfo, deleteUser, ChangUserVaild } from '@/api/article'
-import { getMenuList } from '@/api/MenuAPI'
-import waves from '@/directive/waves' // waves directive
-import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import { getMenuList, saveMenu, deleteMenu } from '@/api/MenuAPI'
+import waves from '@/directive/waves'
+import Pagination from '@/components/Pagination'
 import SelectTree from '@/components/TreeSelect'
 
 export default {
@@ -120,6 +134,13 @@ export default {
   directives: { waves },
   data() {
     return {
+      checkedCities1: ['insert'],
+      optionsList: [
+        { name: '增加', value: 'insert' },
+        { name: '删除', value: 'delete' },
+        { name: '查询', value: 'select' },
+        { name: '修改', value: 'update' },
+        { name: '导出', value: 'export' }],
       isClearable: true, // 可清空（可选）
       isAccordion: true, // 可收起（可选）
       valueId: 1, // 初始ID（可选）
@@ -144,10 +165,14 @@ export default {
       },
       sortOptions: [{ label: '根据排序字段升序排列', key: 'ASC' }, { label: '根据排序字段降序排列', key: 'DESC' }],
       temp: {
-        userId: null,
-        userName: '',
-        passWord: '',
-        isValid: 0
+        menuId: null,
+        parentId: null,
+        menuName: '',
+        route: '',
+        sequence: null,
+        iconClass: '',
+        jsonOperation: [],
+        operation: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -156,9 +181,7 @@ export default {
         create: '添加菜单信息'
       },
       rules: {
-        userName: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-        passWord: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-        roleId: [{ required: true, message: '请选择角色', trigger: 'blur' }]
+        menuName: [{ required: true, message: '请输入菜单名称', trigger: 'blur' }]
       },
       downloadLoading: false
     }
@@ -175,7 +198,6 @@ export default {
     getList() {
       this.listLoading = true
       getMenuList(this.listQuery).then(response => {
-        console.log(response)
         this.list = response.data.item
         this.total = response.data.total
 
@@ -188,13 +210,22 @@ export default {
       this.listQuery.page = 1
       this.getList()
     },
-    handleModifyStatus(row, status) {
-      ChangUserVaild({ userId: row.userId, isValid: status }).then((res) => {
-        this.$message({
-          message: '更新状态成功',
-          type: 'success'
-        })
-        row.isValid = status
+    handleModify(row) {
+      this.temp = {
+        menuId: row.menuId,
+        parentId: row.parentId,
+        menuName: row.menuName,
+        route: row.route,
+        sequence: row.sequence,
+        iconClass: row.iconClass,
+        jsonOperation: row.operation == null ? [] : JSON.parse(row.operation),
+        operation: row.operation
+      }
+      this.checkedCities1 = this.getEqual(this.temp.jsonOperation) // true
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
       })
     },
     sortChange(data) {
@@ -229,9 +260,8 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          saveUserInfo(this.temp).then((res) => {
-            this.temp.isValid = 0
-            this.list.push(this.temp)
+          this.temp.operation = JSON.stringify(this.temp.jsonOperation)
+          saveMenu(this.temp).then((res) => {
             this.dialogFormVisible = false
             this.$notify({
               title: 'Success',
@@ -239,31 +269,47 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.getList()
           })
         }
       })
     },
     handleDelete(row, index) {
-      deleteUser({ userId: row.userId }).then((res) => {
+      deleteMenu({ menuId: row.menuId }).then((res) => {
         this.$notify({
           title: 'Success',
           message: res.message,
           type: 'success',
           duration: 2000
         })
-        this.list.splice(index, 1)
+        this.getList()
+        // this.list.splice(index, 1)
+        // console.log('index:' + index)
+        // console.log('this.list:' + this.list)
       })
     },
     getSortClass: function(key) {
       const sort = this.listQuery.sort
       return sort === `+${key}` ? 'ascending' : 'descending'
     },
-    // 取值
     getValue(value) {
-      // this.valueId = value
-      // console.log(value);
+      this.temp.parentId = value
+    },
+    getOperation() {
+      this.temp.jsonOperation = this.checkedCities1
+    },
+    /**
+   * @param   {objectList} [arr=[]]     [要对比的数组对象]
+   * @param   {string}     [field]      [每一项要对比的字段]
+   * @returns {boolean}    [isNotEqual] [返回boolean值每一项是否相等]
+   */
+    getEqual(arr) {
+      var newArr = []
+      for (var i = 0; i < arr.length; i++) {
+        newArr.push(arr[i].value)
+      }
+      return newArr
     }
-
   }
 }
 </script>

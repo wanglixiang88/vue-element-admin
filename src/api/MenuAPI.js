@@ -7,3 +7,19 @@ export function getMenuList(data) {
       data
     })
   }
+
+  export function saveMenu(data){
+    return request({
+      url:"/API/Menu/SaveMenu",
+      method:"post",
+      data
+    })
+  }
+
+  export function deleteMenu(data){
+    return request({
+      url:"/API/Menu/DeleteMenu",
+      method:"post",
+      data
+    })
+  }
