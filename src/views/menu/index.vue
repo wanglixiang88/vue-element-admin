@@ -55,6 +55,11 @@
           <span>{{ row.createTime }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="页面功能">
+        <template slot-scope="{row}">
+          <el-tag v-for="(item,index) in JSON.parse(row.operation)" :key="index" size="mini" style="margin-left:10px;">{{ item.name }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" width="280px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="handleModify(row)">
@@ -106,7 +111,7 @@
         </el-form-item>
         <el-form-item label="页面功能">
           <el-checkbox-group v-model="checkedCities1" @change="getOperation()">
-            <el-checkbox v-for="i in optionsList" :key="i" :label="i.value">{{ i.name }}</el-checkbox>
+            <el-checkbox v-for="(i,index) in optionsList" :key="index" :label="i.value">{{ i.name }}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
         <el-form-item align="right">
@@ -218,10 +223,10 @@ export default {
         route: row.route,
         sequence: row.sequence,
         iconClass: row.iconClass,
-        jsonOperation: row.operation == null ? [] : JSON.parse(row.operation),
+        jsonOperation: row.modelOperation,
         operation: row.operation
       }
-      this.checkedCities1 = this.getEqual(this.temp.jsonOperation) // true
+      this.checkedCities1 = row.modelOperation // true
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -297,18 +302,6 @@ export default {
     },
     getOperation() {
       this.temp.jsonOperation = this.checkedCities1
-    },
-    /**
-   * @param   {objectList} [arr=[]]     [要对比的数组对象]
-   * @param   {string}     [field]      [每一项要对比的字段]
-   * @returns {boolean}    [isNotEqual] [返回boolean值每一项是否相等]
-   */
-    getEqual(arr) {
-      var newArr = []
-      for (var i = 0; i < arr.length; i++) {
-        newArr.push(arr[i].value)
-      }
-      return newArr
     }
   }
 }
