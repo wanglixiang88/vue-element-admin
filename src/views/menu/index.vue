@@ -90,6 +90,7 @@
         <!-- 调用树形下拉框组件 -->
         <el-form-item label="上级菜单">
           <SelectTree
+            ref="child"
             :props="props"
             :options="optionData"
             :value="temp.parentId"
@@ -148,7 +149,6 @@ export default {
         { name: '导出', value: 'export' }],
       isClearable: true, // 可清空（可选）
       isAccordion: true, // 可收起（可选）
-      valueId: 1, // 初始ID（可选）
       props: {
         value: 'menuId',
         label: 'menuName',
@@ -256,6 +256,9 @@ export default {
     },
     handleCreate() {
       this.resetTemp()
+      this.checkedCities1 = []
+      this.temp.parentId = ''
+      this.$refs.child.clearHandle() // 清空组件选中的值
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
