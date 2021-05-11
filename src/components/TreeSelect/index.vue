@@ -17,7 +17,7 @@
 
 <script>
 export default {
-  name: "el-tree-select",
+  name: 'el-tree-select',
   props: {
     // 配置项
     props: {

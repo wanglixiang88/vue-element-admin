@@ -231,6 +231,9 @@ export default {
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
+        if (this.temp.parentId == null || this.temp.parentId === '') {
+          this.$refs.child.clearHandle() // 清空组件选中的值
+        }
       })
     },
     sortChange(data) {
@@ -257,8 +260,6 @@ export default {
     handleCreate() {
       this.resetTemp()
       this.checkedCities1 = []
-      this.temp.parentId = ''
-      this.$refs.child.clearHandle() // 清空组件选中的值
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
