@@ -57,7 +57,7 @@
       </el-table-column>
       <el-table-column label="页面功能">
         <template slot-scope="{row}">
-          <el-tag v-for="(item,index) in JSON.parse(row.operation)" :key="index" size="mini" style="margin-left:10px;">{{ item.name }}</el-tag>
+          <el-tag v-for="(item,index) in JSON.parse(row.operation)" :key="index" size="mini" style="margin-left:10px;">{{ item.arryName }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" width="280px" class-name="small-padding fixed-width">
@@ -112,7 +112,7 @@
         </el-form-item>
         <el-form-item label="页面功能">
           <el-checkbox-group v-model="checkedCities1" @change="getOperation()">
-            <el-checkbox v-for="(i,index) in optionsList" :key="index" :label="i.value">{{ i.name }}</el-checkbox>
+            <el-checkbox v-for="(i,index) in optionsList" :key="index" :label="i.arryValue">{{ i.arryName }}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
         <el-form-item align="right">
@@ -142,11 +142,11 @@ export default {
     return {
       checkedCities1: ['insert'],
       optionsList: [
-        { name: '增加', value: 'insert' },
-        { name: '删除', value: 'delete' },
-        { name: '查询', value: 'select' },
-        { name: '修改', value: 'update' },
-        { name: '导出', value: 'export' }],
+        { arryName: '增加', arryValue: 'insert' },
+        { arryName: '删除', arryValue: 'delete' },
+        { arryName: '查询', arryValue: 'select' },
+        { arryName: '修改', arryValue: 'update' },
+        { arryName: '导出', arryValue: 'export' }],
       isClearable: true, // 可清空（可选）
       isAccordion: true, // 可收起（可选）
       props: {
