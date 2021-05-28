@@ -23,14 +23,11 @@
           <span>{{ row.menuName }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="跳转路径" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.route }}</span>
-        </template>
-      </el-table-column>
       <el-table-column label="页面功能">
         <template slot-scope="{row}">
-          <el-tag v-for="(item,index) in JSON.parse(row.operation)" :key="index" size="mini" style="margin-left:10px;">{{ item.arryName }}</el-tag>
+          <el-checkbox-group v-model="row.modelOperation">
+            <el-checkbox v-for="(item,index) in JSON.parse(row.operation)" :key="index">{{ item.arryName }}</el-checkbox>
+          </el-checkbox-group>
         </template>
       </el-table-column>
     </el-table>
@@ -67,11 +64,6 @@ export default {
   },
   created() {
     this.getList()
-  },
-  computed: {
-    optionData() {
-      return this.list
-    }
   },
   methods: {
     getList() {
