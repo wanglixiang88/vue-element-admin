@@ -27,7 +27,7 @@
         <template slot-scope="{row}">
           <el-checkbox-group v-model="row.modelOperation">
             <el-checkbox v-for="(item,index) in JSON.parse(row.operation)" :key="index">{{ item.arryName }}</el-checkbox>
-          </el-checkbox-group>1
+          </el-checkbox-group>
         </template>
       </el-table-column>
     </el-table>
@@ -102,4 +102,3 @@ export default {
   }
 }
 </script>
-1
