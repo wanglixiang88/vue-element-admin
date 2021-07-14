@@ -25,13 +25,13 @@
       </el-table-column>
       <el-table-column label="页面功能">
         <template slot-scope="{row}">
-          <el-checkbox-group v-model="row.modelOperation">
-            <el-checkbox v-for="(item,index) in JSON.parse(row.operation)" :key="index">{{ item.arryName }}</el-checkbox>
-          </el-checkbox-group>
+          <el-checkbox v-for="(item,index) in JSON.parse(row.operation)" :key="index">{{ item.arryName }}</el-checkbox>
         </template>
       </el-table-column>
     </el-table>
 
+    <el-button type="primary" style="width:100%">保存-父组件传过来的值：{{roleIdValue}}</el-button>
+    
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
   </div>
@@ -44,8 +44,16 @@ import Pagination from '@/components/Pagination'
 
 export default {
   name: 'ComplexTable',
+  props:[ 'roleIdValue' ],
   components: { Pagination },
   directives: { waves },
+  watch:{
+    roleIdValue:{
+      handler(newVal,oldVal){
+        console.log('父组件传到子组件的值修改前：'+oldVal+'，修改后：'+newVal)
+      }
+    }
+  },
   data() {
     return {
       tableKey: 0,
@@ -58,6 +66,7 @@ export default {
         sort: 'ASC',
         sidx: 'sequence',
         parameterJson: [
+          { paramName: 'roleId', paramValue: '', Operation: 'Equal' }
         ]
       }
     }
@@ -71,7 +80,6 @@ export default {
       getMenuList(this.listQuery).then(response => {
         this.list = response.data.item
         this.total = response.data.total
-
         setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000)

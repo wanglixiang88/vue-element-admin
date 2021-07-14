@@ -63,7 +63,7 @@
           <el-button type="primary" size="mini" @click="handleModify(row)">
             <i class="el-icon-edit"></i>编辑
           </el-button>
-          <el-button type="success" size="mini">
+          <el-button type="success" size="mini" @click="handleShowUserRole(row)">
             <i class="el-icon-setting"></i>设置权限
           </el-button>
           <el-button type="danger" size="mini" @click="handleDelete(row,$index)">
@@ -91,29 +91,27 @@
       </el-form>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">Confirm</el-button>
-      </span>
+    <el-dialog :visible.sync="dialogVisibleSetRole" title="设置权限" >
+      <ShowSetRole  :roleIdValue="checkRoleId" ></ShowSetRole>
     </el-dialog>
   </div>
 </template>
+
 
 <script>
 import { fetchList, saveRoleInfo, deleteRoleInfo } from '@/api/UserRoleAPI'
 import waves from '@/directive/waves' // waves directive
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import ShowSetRole from '@/views/user/setRole.vue'
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination },
+  components: { Pagination, ShowSetRole },
   directives: { waves },
   data() {
     return {
+      dialogVisibleSetRole:false,
+      checkRoleId:0,
       tableKey: 0,
       list: null,
       total: 0,
@@ -140,8 +138,6 @@ export default {
         update: '更新角色信息',
         create: '添加角色'
       },
-      dialogPvVisible: false,
-      pvData: [],
       rules: {
         roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }]
       }
@@ -257,6 +253,10 @@ export default {
     getSortClass: function(key) {
       const sort = this.listQuery.sort
       return sort === `+${key}` ? 'ascending' : 'descending'
+    },
+    handleShowUserRole(row){
+      this.dialogVisibleSetRole=true
+      this.checkRoleId=row.roleId
     }
   }
 }
