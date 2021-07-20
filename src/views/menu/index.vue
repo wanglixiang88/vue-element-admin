@@ -1,10 +1,6 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.parameterJson[0].paramValue" placeholder="菜单名称" style="width:200px; margin-right:10px;" class="filter-item" />
-      <el-select v-model="listQuery.sort" class="filter-item" style="margin-right:10px;" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         搜索
       </el-button>
@@ -23,9 +19,8 @@
       highlight-current-row
       style="width: 100%;"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
-      @sort-change="sortChange"
     >
-      <el-table-column label="菜单Id" align="center" :class-name="getSortClass('id')">
+      <el-table-column label="菜单Id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.menuId }}</span>
         </template>
@@ -83,8 +78,6 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width:90%; margin:0px auto ">
         <!-- 调用树形下拉框组件 -->
@@ -131,12 +124,11 @@
 <script>
 import { getMenuList, saveMenu, deleteMenu } from '@/api/MenuAPI'
 import waves from '@/directive/waves'
-import Pagination from '@/components/Pagination'
 import SelectTree from '@/components/TreeSelect'
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination, SelectTree },
+  components: { SelectTree },
   directives: { waves },
   data() {
     return {
@@ -157,18 +149,13 @@ export default {
       // 以上为配置树形下拉框所使用的参数
       tableKey: 0,
       list: null,
-      total: 0,
       listLoading: false,
       listQuery: {
-        page: 1,
-        limit: 10,
         sort: 'ASC',
         sidx: 'sequence',
         parameterJson: [
-          { paramName: 'menuName', paramValue: '', Operation: 'Like' }
         ]
       },
-      sortOptions: [{ label: '根据排序字段升序排列', key: 'ASC' }, { label: '根据排序字段降序排列', key: 'DESC' }],
       temp: {
         menuId: null,
         parentId: null,
@@ -204,15 +191,12 @@ export default {
       this.listLoading = true
       getMenuList(this.listQuery).then(response => {
         this.list = response.data.item
-        this.total = response.data.total
-
         setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000)
       })
     },
     handleFilter() {
-      this.listQuery.page = 1
       this.getList()
     },
     handleModify(row) {
@@ -236,25 +220,16 @@ export default {
         }
       })
     },
-    sortChange(data) {
-      const { prop, order } = data
-      if (prop === 'id') {
-        this.sortByID(order)
-      }
-    },
-    sortByID(order) {
-      if (order === 'ascending') {
-        this.listQuery.sort = '+id'
-      } else {
-        this.listQuery.sort = '-id'
-      }
-      this.handleFilter()
-    },
     resetTemp() {
       this.temp = {
-        id: undefined,
-        userName: '',
-        passWord: ''
+        menuId: null,
+        parentId: null,
+        menuName: '',
+        route: '',
+        sequence: null,
+        iconClass: '',
+        jsonOperation: [],
+        operation: ''
       }
     },
     handleCreate() {
@@ -292,14 +267,7 @@ export default {
           duration: 2000
         })
         this.getList()
-        // this.list.splice(index, 1)
-        // console.log('index:' + index)
-        // console.log('this.list:' + this.list)
       })
-    },
-    getSortClass: function(key) {
-      const sort = this.listQuery.sort
-      return sort === `+${key}` ? 'ascending' : 'descending'
     },
     getValue(value) {
       this.temp.parentId = value
