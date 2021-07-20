@@ -23,3 +23,11 @@ export function deleteRoleInfo(data){
     data
   })
 }
+
+export function getRoleMenuList(data){
+  return request({
+    url:"/API/UserRole/GetRoleMenu",
+    method:"post",
+    data
+  })
+}
