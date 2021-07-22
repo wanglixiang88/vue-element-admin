@@ -4,7 +4,7 @@
     <el-table
       :key="tableKey"
       v-loading="listLoading"
-      :data="list"
+      :data="listDate.list"
       row-key="menuId"
       border
       fit
@@ -24,12 +24,12 @@
       </el-table-column>
       <el-table-column label="页面功能">
         <template slot-scope="{row}">
-          <el-checkbox v-for="(item,index) in row.arryList" :checked="item.arryChecked" :key="item.arryValue">{{ item.arryName }}</el-checkbox>
+          <el-checkbox v-for="(item,index) in row.arryList" v-model="item.arryChecked" :checked="item.arryChecked" :key="item.arryValue">{{ item.arryName }}</el-checkbox>
         </template>
       </el-table-column>
     </el-table>
 
-    <el-button type="primary" style="width:100%">保存-父组件传过来的值：{{roleIdValue}}</el-button>
+    <el-button type="primary" style="width:100%" @click="saveRoleInfo">保存-父组件传过来的值：{{roleIdValue}}</el-button>
 
   </div>
 </template>
@@ -45,7 +45,7 @@ export default {
   watch:{
     roleIdValue:{
       handler(newVal,oldVal){
-        this.listQuery.roleId=newVal;
+        this.listDate.roleId=newVal;
         this.getList()
         console.log('父组件传到子组件的值修改前：'+oldVal+'，修改后：'+newVal)
       }
@@ -54,9 +54,12 @@ export default {
   data() {
     return {
       tableKey: 0,
-      list: null,
       listLoading: false,
       listQuery: {
+        roleId:this.roleIdValue
+      },
+      listDate:{
+        list:null,
         roleId:this.roleIdValue
       }
     }
@@ -67,12 +70,23 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      this.list = null;
-      getRoleMenuList(this.listQuery).then(response => {
-        this.list = response.data.item
+      this.listDate.list = null;
+      getRoleMenuList(this.listDate).then(response => {
+        this.listDate.list = response.data.item
         setTimeout(() => {
           this.listLoading = false
         }, 1.5 * 1000)
+      })
+    },
+    saveRoleInfo(){
+      saveRolePower(this.listDate).then(response=>{
+        // console.log('调用保存角色权限接口返回的数据：'+response)
+         this.$notify({
+              title: 'Success',
+              message: response.message,
+              type: 'success',
+              duration: 2000
+            })
       })
     }
   }
