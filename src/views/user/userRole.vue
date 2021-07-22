@@ -150,11 +150,10 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        console.log(response)
         this.list = response.data.item
         this.total = response.data.total
 
-        setTimeout(() => {
+        setTimeout(() =>   {
           this.listLoading = false
         }, 1.5 * 1000)
       })

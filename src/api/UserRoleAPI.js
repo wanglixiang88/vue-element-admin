@@ -31,3 +31,11 @@ export function getRoleMenuList(data){
     data
   })
 }
+
+export function saveRolePower(data){
+  return request({
+    url:"/API/UserRole/SavePermissionRole",
+    method:"post",
+    data
+  })
+}

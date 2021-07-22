@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { getRoleMenuList } from '@/api/UserRoleAPI'
+import { getRoleMenuList, saveRolePower } from '@/api/UserRoleAPI'
 import waves from '@/directive/waves'
 
 export default {
