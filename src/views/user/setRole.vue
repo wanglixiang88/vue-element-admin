@@ -80,7 +80,6 @@ export default {
     },
     saveRoleInfo(){
       saveRolePower(this.listDate).then(response=>{
-        // console.log('调用保存角色权限接口返回的数据：'+response)
          this.$notify({
               title: 'Success',
               message: response.message,
