@@ -22,4 +22,4 @@ export function getDictionaryList(data) {
       method:"post",
       data
     })
-  }//1
+  }
